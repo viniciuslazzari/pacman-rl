@@ -48,21 +48,21 @@ from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 config = (
     PPOConfig()
     .environment("PacmanFloat")
-    .env_runners(num_env_runners=2)
+    .env_runners(num_env_runners=1)
     .rl_module(
         model_config=DefaultModelConfig(
             conv_activation="relu",
             conv_filters=[
-                [16, [8, 8], 4],
-                [32, [4, 4], 2],
-                [64, [3, 3], 1],
+                [32, [8, 8], 4],
+                [64, [4, 4], 2],
+                [128, [3, 3], 1],
             ],
-            head_fcnet_hiddens=[256]
+            head_fcnet_hiddens=[512, 512]
         )
     )
     .training(
-        lr=0.0002,
-        train_batch_size_per_learner=200,
+        lr=0.0005,
+        train_batch_size_per_learner=1000,
         num_epochs=10,
     )
     .evaluation(
@@ -115,7 +115,7 @@ if not logger.handlers:
     logger.addHandler(fh)
     logger.addHandler(sh)
 
-for i in range(1):
+for i in range(50):
     result = algo.train()
     logger.info("=== Training iteration %d ===", i)
     try:
@@ -135,30 +135,6 @@ eval_result = algo.evaluate()
 # Save a checkpoint into the output directory
 checkpoint_path = algo.save(save_dir)
 logger.info("Checkpoint saved at: %s", checkpoint_path)
-
-# Save metadata about the run
-metadata = {
-    "checkpoint_path": checkpoint_path,
-    "eval_result_summary": {
-        "episode_return_mean": eval_result.get('evaluation', {}).get('env_runners', {}).get('episode_return_mean'),
-        "episode_len_mean": eval_result.get('evaluation', {}).get('env_runners', {}).get('episode_len_mean')
-    },
-    "timestamp": datetime.utcnow().isoformat() + "Z"
-}
-with open(os.path.join(save_dir, "metadata.json"), "w") as f:
-    json.dump(metadata, f, indent=2)
-
-# Try to copy Ray session logs (if present) into the output folder for easier access
-ray_session_src = os.path.join("/tmp", "ray", "session_latest")
-ray_session_dst = os.path.join(save_dir, "ray_session_latest")
-try:
-    if os.path.exists(ray_session_src):
-        shutil.copytree(ray_session_src, ray_session_dst, dirs_exist_ok=True)
-        logger.info("Copied Ray session logs to: %s", ray_session_dst)
-    else:
-        logger.info("No Ray session directory (%s) found to copy", ray_session_src)
-except Exception:
-    logger.exception("Failed to copy Ray session logs")
 
 # ==============================
 #  Cleanup

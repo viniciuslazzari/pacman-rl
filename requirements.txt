@@ -3,3 +3,4 @@ gymnasium[atari]
 ale-py
 torch
 numpy
+pydantic

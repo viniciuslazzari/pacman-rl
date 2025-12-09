@@ -1,3 +1,7 @@
 *.stderr
 *.stdout
+*.err
+*.out
+out
 ray*
+.env
