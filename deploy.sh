@@ -1,5 +1,5 @@
 #!/bin/bash
-#OAR -l host=10,walltime=1:00:00
+#OAR -l host=30,walltime=3:00:00
 #OAR -p paradoxe
 #OAR -O OAR_%jobid%.out
 #OAR -E OAR_%jobid%.err
@@ -84,7 +84,6 @@ if [ ${#WORKERS[@]} -gt 0 ]; then
         remote_exec "$worker" "
             ray stop || true;
             ray start --address=$MASTER_IP:$RAY_PORT \
-                --temp-dir=$RAY_TMP_DIR \
                 --disable-usage-stats
         " &
     done

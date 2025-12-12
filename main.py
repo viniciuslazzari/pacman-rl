@@ -48,26 +48,27 @@ from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 config = (
     PPOConfig()
     .environment("PacmanFloat")
-    .env_runners(num_env_runners=1)
+    .env_runners(num_env_runners=60, num_envs_per_env_runner=2)
     .rl_module(
         model_config=DefaultModelConfig(
             conv_activation="relu",
             conv_filters=[
                 [32, [8, 8], 4],
                 [64, [4, 4], 2],
-                [128, [3, 3], 1],
+                [64, [3, 3], 1],
             ],
-            head_fcnet_hiddens=[512, 512]
+            head_fcnet_hiddens=[256, 256],
+            vf_share_layers=False
         )
     )
     .training(
-        lr=0.0005,
-        train_batch_size_per_learner=1000,
+        lr=0.0002,
+        train_batch_size=8000,
         num_epochs=10,
     )
     .evaluation(
-        evaluation_interval=1,
-        evaluation_num_env_runners=1
+        evaluation_interval=5,
+        evaluation_num_env_runners=4
     )
 )
 
@@ -115,17 +116,27 @@ if not logger.handlers:
     logger.addHandler(fh)
     logger.addHandler(sh)
 
-for i in range(50):
+for i in range(100):
     result = algo.train()
     logger.info("=== Training iteration %d ===", i)
-    try:
-        logger.info("Mean Episode Return: %s", result['evaluation']['env_runners']['episode_return_mean'])
-        logger.info("Mean Episode Length: %s", result['evaluation']['env_runners']['episode_len_mean'])
-        logger.info("Total Loss: %s", result['learners']['default_policy']['total_loss'])
-        logger.info("VF Loss: %s", result['learners']['default_policy']['vf_loss'])
-        logger.info("Policy Loss: %s", result['learners']['default_policy']['policy_loss'])
-    except Exception:
-        logger.exception("Failed to log some training metrics")
+    # Summary of important metrics
+    episode_return_mean = result.get('env_runners', {}).get('episode_return_mean', 'N/A')
+    episode_len_mean = result.get('env_runners', {}).get('episode_len_mean', 'N/A')
+    num_episodes = result.get('env_runners', {}).get('num_episodes', 'N/A')
+    num_env_steps_sampled_lifetime = result.get('env_runners', {}).get('num_env_steps_sampled_lifetime', 'N/A')
+    time_this_iter_s = result.get('time_this_iter_s', 'N/A')
+    total_loss = result.get('learners', {}).get('default_policy', {}).get('total_loss', 'N/A')
+    vf_loss = result.get('learners', {}).get('default_policy', {}).get('vf_loss', 'N/A')
+    policy_loss = result.get('learners', {}).get('default_policy', {}).get('policy_loss', 'N/A')
+    entropy = result.get('learners', {}).get('default_policy', {}).get('entropy', 'N/A')
+    
+    logger.info("Summary - Episode Return Mean: %s, Episode Len Mean: %s, Num Episodes: %s, Total Steps: %s, Time: %.2f s",
+                episode_return_mean, episode_len_mean, num_episodes, num_env_steps_sampled_lifetime, time_this_iter_s)
+    logger.info("Losses - Total: %s, VF: %s, Policy: %s, Entropy: %s",
+                total_loss, vf_loss, policy_loss, entropy)
+    
+    # Uncomment the line below to log the full result dict if needed
+    logger.info(result)
 
 # ==============================
 #  Evaluation
