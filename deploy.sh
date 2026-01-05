@@ -37,7 +37,7 @@ remote_exec() {
 if [[ -n "${OAR_NODEFILE-}" && -f "$OAR_NODEFILE" ]]; then
     mapfile -t HOSTS < <(sort -u "$OAR_NODEFILE")
 else
-    echo "AVISO: OAR_NODEFILE não encontrado. Rodando em modo de nó único."
+    echo "WARNING: OAR_NODEFILE not found. Running in single-node mode."
     HOSTS=("$(hostname -f)")
 fi
 
@@ -45,15 +45,15 @@ MASTER="${HOSTS[0]}"
 WORKERS=("${HOSTS[@]:1}")
 
 echo "========================================"
-echo " Início do Deploy"
+echo " Starting Deploy"
 echo "========================================"
-echo "Diretório do Projeto: $PROJECT_DIR"
-echo "Nó Master: $MASTER"
-echo "Nós Workers: ${WORKERS[*]:-(nenhum)}"
+echo "Project Directory: $PROJECT_DIR"
+echo "Master Node: $MASTER"
+echo "Worker Nodes: ${WORKERS[*]:-(none)}"
 echo "----------------------------------------"
 
 cleanup() {
-    echo "Limpando Ray..."
+    echo "Cleaning up Ray..."
     for h in "${HOSTS[@]}"; do
         remote_exec "$h" "ray stop || true"
     done
@@ -63,9 +63,9 @@ trap cleanup EXIT INT TERM
 MASTER_IP_RAW=$(remote_exec "$MASTER" "hostname -I")
 set -- $MASTER_IP_RAW
 MASTER_IP="$1"
-echo "IP do Master: $MASTER_IP"
+echo "Master IP: $MASTER_IP"
 
-echo "Iniciando Ray head no master..."
+echo "Starting Ray head on master..."
 remote_exec "$MASTER" "
     ray stop || true;
     ray start --head \
@@ -78,7 +78,7 @@ remote_exec "$MASTER" "
 sleep 5
 
 if [ ${#WORKERS[@]} -gt 0 ]; then
-    echo "Iniciando workers..."
+    echo "Starting workers..."
     for worker in "${WORKERS[@]}"; do
         echo " - Worker: $worker"
         remote_exec "$worker" "
@@ -89,26 +89,26 @@ if [ ${#WORKERS[@]} -gt 0 ]; then
     done
     wait
 else
-    echo "Nenhum worker para iniciar."
+    echo "No workers to start."
 fi
 
 sleep 3
 
 echo "----------------------------------------"
-echo "Iniciando o treinamento no master..."
+echo "Starting training on master..."
 
 remote_exec "$MASTER" "
     cd \"$PROJECT_DIR\"
     export SAVE_DIR=\"$SAVE_DIR\"
     python3 main.py
-" > "$SAVE_DIR/console.log" 2>&1   # <-- FIXED REDIRECT
+" > "$SAVE_DIR/console.log" 2>&1
 
-echo "Treinamento finalizado."
+echo "Training completed."
 echo "----------------------------------------"
 
-echo "Resultados e logs estão em: $SAVE_DIR"
+echo "Results and logs are in: $SAVE_DIR"
 ls -lah "$SAVE_DIR"
 
 echo "========================================"
-echo " Deploy Finalizado"
+echo " Deploy Finished"
 echo "========================================"
