@@ -4,9 +4,21 @@ import gymnasium as gym
 import numpy as np
 import logging
 import json
-import shutil
 from datetime import datetime
-from pprint import pprint
+
+
+NUM_ITERATIONS = 100 
+
+# ==============================
+# Helper to sanitize metrics
+# ==============================
+def sanitize(value):
+    """Convert NumPy scalars to native Python types for JSON"""
+    if isinstance(value, (np.floating, np.float32, np.float64)):
+        return float(value)
+    elif isinstance(value, (np.integer, np.int32, np.int64)):
+        return int(value)
+    return value
 
 # ==============================
 #  Atari → Float32 Wrapper
@@ -76,33 +88,24 @@ config = (
 algo = config.build_algo()
 
 # ==============================
-#  Training Loop
+# Output directory and logging
 # ==============================
-# Prepare output directory (default: `out` inside project) and logging
 project_dir = os.path.dirname(os.path.abspath(__file__))
-# Force default save inside the project source folder. Prefer SAVE_DIR if provided
-# (deploy.sh sets SAVE_DIR=/app/output which will be mounted from the host project's out dir).
 default_out = os.path.join(project_dir, "out")
-env_save = os.environ.get("SAVE_DIR")
-if env_save:
-    save_dir = env_save
-else:
-    # If no SAVE_DIR provided, fall back to the project's `out` dir inside source tree
-    save_dir = default_out
+save_dir = os.environ.get("SAVE_DIR", default_out)
 
-# Ensure save_dir is inside the project source folder. If not, override and warn.
+# Ensure save_dir is inside the project folder
 try:
     common = os.path.commonpath([project_dir, os.path.abspath(save_dir)])
 except Exception:
     common = None
 if common != project_dir:
-    # save_dir is outside the project tree — force to project/out to satisfy requirement
     save_dir = default_out
     print(f"WARNING: SAVE_DIR was outside project tree. Forcing save_dir to {save_dir}")
 
 os.makedirs(save_dir, exist_ok=True)
 
-# Configure logging to both stdout and a file under the output dir
+# Configure logger
 logger = logging.getLogger("training")
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
@@ -116,34 +119,73 @@ if not logger.handlers:
     logger.addHandler(fh)
     logger.addHandler(sh)
 
-for i in range(100):
+# Metrics file
+metrics_jsonl_path = os.path.join(save_dir, "metrics.jsonl")
+
+# ==============================
+# Training Loop
+# ==============================
+for i in range(NUM_ITERATIONS):
     result = algo.train()
     logger.info("=== Training iteration %d ===", i)
-    # Summary of important metrics
-    episode_return_mean = result.get('env_runners', {}).get('episode_return_mean', 'N/A')
-    episode_len_mean = result.get('env_runners', {}).get('episode_len_mean', 'N/A')
-    num_episodes = result.get('env_runners', {}).get('num_episodes', 'N/A')
-    num_env_steps_sampled_lifetime = result.get('env_runners', {}).get('num_env_steps_sampled_lifetime', 'N/A')
-    time_this_iter_s = result.get('time_this_iter_s', 'N/A')
-    total_loss = result.get('learners', {}).get('default_policy', {}).get('total_loss', 'N/A')
-    vf_loss = result.get('learners', {}).get('default_policy', {}).get('vf_loss', 'N/A')
-    policy_loss = result.get('learners', {}).get('default_policy', {}).get('policy_loss', 'N/A')
-    entropy = result.get('learners', {}).get('default_policy', {}).get('entropy', 'N/A')
-    
-    logger.info("Summary - Episode Return Mean: %s, Episode Len Mean: %s, Num Episodes: %s, Total Steps: %s, Time: %.2f s",
-                episode_return_mean, episode_len_mean, num_episodes, num_env_steps_sampled_lifetime, time_this_iter_s)
-    logger.info("Losses - Total: %s, VF: %s, Policy: %s, Entropy: %s",
-                total_loss, vf_loss, policy_loss, entropy)
-    
+
+    env_stats = result.get("env_runners", {})
+    learner_stats = result.get("learners", {}).get("default_policy", {})
+
+    raw_metrics = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "iteration": i,
+        "episode_return_mean": env_stats.get("episode_return_mean"),
+        "episode_len_mean": env_stats.get("episode_len_mean"),
+        "num_episodes": env_stats.get("num_episodes"),
+        "num_env_steps_sampled_lifetime": env_stats.get("num_env_steps_sampled_lifetime"),
+        "time_this_iter_s": result.get("time_this_iter_s"),
+        "total_loss": learner_stats.get("total_loss"),
+        "policy_loss": learner_stats.get("policy_loss"),
+        "vf_loss": learner_stats.get("vf_loss"),
+        "entropy": learner_stats.get("entropy"),
+    }
+
+    metrics = {k: sanitize(v) for k, v in raw_metrics.items()}
+
+    if metrics["episode_return_mean"] is None:
+        logger.warning(
+            "Iteration %d: no completed episodes yet, skipping metrics write", i
+        )
+        continue
+
+    # Logging summary
+    logger.info(
+        "Summary - Episode Return Mean: %s, Episode Len Mean: %s, "
+        "Num Episodes: %s, Total Steps: %s, Time: %s s",
+        metrics["episode_return_mean"],
+        metrics["episode_len_mean"],
+        metrics["num_episodes"],
+        metrics["num_env_steps_sampled_lifetime"],
+        metrics["time_this_iter_s"]
+    )
+
+    logger.info(
+        "Losses - Total: %s, VF: %s, Policy: %s, Entropy: %s",
+        metrics["total_loss"],
+        metrics["vf_loss"],
+        metrics["policy_loss"],
+        metrics["entropy"]
+    )
+
+    # Write JSONL
+    with open(metrics_jsonl_path, "a") as f:
+        f.write(json.dumps(metrics) + "\n")
+
     # Uncomment the line below to log the full result dict if needed
-    logger.info(result)
+    # logger.info(result)
 
 # ==============================
 #  Evaluation
 # ==============================
 eval_result = algo.evaluate()
 
-# Save a checkpoint into the output directory
+# Save checkpoint
 checkpoint_path = algo.save(save_dir)
 logger.info("Checkpoint saved at: %s", checkpoint_path)
 
@@ -151,3 +193,4 @@ logger.info("Checkpoint saved at: %s", checkpoint_path)
 #  Cleanup
 # ==============================
 algo.stop()
+logger.info("Training completed.")
