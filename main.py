@@ -4,10 +4,13 @@ import gymnasium as gym
 import numpy as np
 import logging
 import json
+import time
 from datetime import datetime
 
 
-NUM_ITERATIONS = 100 
+NUM_ITERATIONS = 100
+NUM_ENV_RUNNERS = 60
+NUM_ENVS_PER_ENV_RUNNER = 2
 
 # ==============================
 # Helper to sanitize metrics
@@ -60,7 +63,7 @@ from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 config = (
     PPOConfig()
     .environment("PacmanFloat")
-    .env_runners(num_env_runners=60, num_envs_per_env_runner=2)
+    .env_runners(num_env_runners=NUM_ENV_RUNNERS, num_envs_per_env_runner=NUM_ENVS_PER_ENV_RUNNER)
     .rl_module(
         model_config=DefaultModelConfig(
             conv_activation="relu",
@@ -125,6 +128,7 @@ metrics_jsonl_path = os.path.join(save_dir, "metrics.jsonl")
 # ==============================
 # Training Loop
 # ==============================
+training_start = time.perf_counter()
 for i in range(NUM_ITERATIONS):
     result = algo.train()
     logger.info("=== Training iteration %d ===", i)
@@ -179,6 +183,20 @@ for i in range(NUM_ITERATIONS):
 
     # Uncomment the line below to log the full result dict if needed
     # logger.info(result)
+
+# Compute total training time and save information
+total_time_s = time.perf_counter() - training_start
+totals = {
+    "timestamp": datetime.utcnow().isoformat(),
+    "total_training_time_s": float(total_time_s),
+    "num_env_runners": NUM_ENV_RUNNERS,
+    "num_envs_per_env_runner": NUM_ENVS_PER_ENV_RUNNER,
+    "total_env_steps_sampled_lifetime": metrics.get("num_env_steps_sampled_lifetime") if 'metrics' in locals() else None
+}
+totals_path = os.path.join(save_dir, "information.json")
+with open(totals_path, "w") as f:
+    json.dump({k: sanitize(v) for k, v in totals.items()}, f, indent=2)
+logger.info("Information saved to %s", totals_path)
 
 # ==============================
 #  Evaluation
