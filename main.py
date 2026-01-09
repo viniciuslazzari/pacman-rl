@@ -136,7 +136,7 @@ if not logger.handlers:
     logger.addHandler(fh)
     logger.addHandler(sh)
 
-metrics_jsonl_path = os.path.join(save_dir, "metrics.jsonl")
+metrics_jsonl_path = os.path.join(save_dir, f"metrics_{NUM_ENV_RUNNERS}envrunners.jsonl")
 
 
 # ==============================
@@ -211,13 +211,13 @@ info = {
     "num_env_runners": NUM_ENV_RUNNERS,
     "num_envs_per_env_runner": NUM_ENVS_PER_ENV_RUNNER,
     "num_iterations": NUM_ITERATIONS,
-    "train_batch_size": 2000,
+    "train_batch_size": TRAIN_BATCH_SIZE,
     "total_training_time_s": total_time_s,
     "total_training_time_min": total_time_s / 60,
     "total_env_steps": prev_env_steps,
 }
 
-with open(os.path.join(save_dir, "information.json"), "w") as f:
+with open(os.path.join(save_dir, f"information_{NUM_ENV_RUNNERS}envrunners.json"), "w") as f:
     json.dump({k: sanitize(v) for k, v in info.items()}, f, indent=2)
 
 logger.info("Information saved")
