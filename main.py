@@ -8,9 +8,11 @@ import time
 from datetime import datetime
 
 
-NUM_ITERATIONS = 5
+NUM_ITERATIONS = 60
 NUM_ENV_RUNNERS = int(os.environ.get("NUM_ENV_RUNNERS", 8))
 NUM_ENVS_PER_ENV_RUNNER = 1
+TRAIN_BATCH_SIZE = 8000
+EPOCHS = 10
 
 # ==============================
 # Helper to sanitize metrics
@@ -89,8 +91,8 @@ config = (
     )
     .training(
         lr=0.0002,
-        train_batch_size=2000,
-        num_epochs=5,
+        train_batch_size=TRAIN_BATCH_SIZE,
+        num_epochs=NUM_EPOCHS,
     )
     .evaluation(
         evaluation_interval=5,
