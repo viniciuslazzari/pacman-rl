@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-01-09T20:16:11.876243",
+  "num_env_runners": 1,
+  "num_envs_per_env_runner": 1,
+  "num_iterations": 60,
+  "train_batch_size": 8000,
+  "total_training_time_s": 10588.561643739,
+  "total_training_time_min": 176.47602739565,
+  "total_env_steps": 796000.0
+}

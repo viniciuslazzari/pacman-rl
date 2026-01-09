@@ -17,7 +17,7 @@ with open(metrics_file) as f:
 iterations = [m["iteration"] for m in metrics]
 returns = [m["episode_return_mean"] for m in metrics]
 lengths = [m["episode_len_mean"] for m in metrics]
-steps = [m["num_env_steps_sampled_lifetime"] for m in metrics]
+steps = [m["env_steps_lifetime"] for m in metrics]
 policy_loss = [m["policy_loss"] for m in metrics]
 vf_loss = [m["vf_loss"] for m in metrics]
 entropy = [m["entropy"] for m in metrics]

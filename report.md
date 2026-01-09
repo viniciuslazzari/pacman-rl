@@ -2,12 +2,20 @@
 
 We have tested different setups, changing the number of hosts (nodes) and the number of environment runners.
 
-## Experiment 0: 1 host, 1 core, 1 environment runner
+## Experiment 1: 1 host, 1 environment runner
+
+Master Node: paradoxe-31.rennes.grid5000.fr
+Worker Nodes: (none)
+
+- 60 iterations, 1 env runner, 1 env per env runner
+- batch size: 8000, epochs: 10
+- 176 min
+![Training dashboard](dashboards/1envrunners.png)
+
+Early iterations (0–10) have smaller rewards (~11–50) and more fluctuations, but from iterations 30–59, rewards are higher and more consistently around 80–130, though some spikes/decreases exist. Mean episode reward increases from approximately 11 in the first iteration to over 90 by the last iteration, indicating effective learning. Some fluctuations remain due to exploration, but the overall trend shows consistent improvement in policy performance.
 
 
-Baseline: single CPU, single worker, single env. 
-
-## Experiment 1: 2 hosts, 8 env runners, 1 env per runner
+## Experiment x: 2 hosts, 8 env runners, 1 env per runner
 
 - Total time: 2 hours 48 minutes (10077.2967520411 seconds)
 - The agent’s rewards steadily increase over training, rising from ~16 to ~60–70 and fluctuating around 60.
