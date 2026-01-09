@@ -63,17 +63,25 @@ from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 config = (
     PPOConfig()
     .environment("PacmanFloat")
-    .env_runners(num_env_runners=NUM_ENV_RUNNERS, num_envs_per_env_runner=NUM_ENVS_PER_ENV_RUNNER)
+    .env_runners(
+        num_env_runners=NUM_ENV_RUNNERS,
+        num_envs_per_env_runner=NUM_ENVS_PER_ENV_RUNNER
+    )
     .rl_module(
         model_config=DefaultModelConfig(
+            # DeepMind Atari CNN
             conv_activation="relu",
             conv_filters=[
                 [32, [8, 8], 4],
                 [64, [4, 4], 2],
                 [64, [3, 3], 1],
             ],
-            head_fcnet_hiddens=[256, 256],
-            vf_share_layers=False
+
+            # Classic single FC layer
+            head_fcnet_hiddens=[512],
+
+            # Share CNN + FC between policy and value
+            vf_share_layers=True
         )
     )
     .training(
@@ -86,6 +94,7 @@ config = (
         evaluation_num_env_runners=4
     )
 )
+
 
 # Build the algorithm
 algo = config.build_algo()
