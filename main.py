@@ -8,9 +8,9 @@ import time
 from datetime import datetime
 
 
-NUM_ITERATIONS = 100
-NUM_ENV_RUNNERS = 60
-NUM_ENVS_PER_ENV_RUNNER = 2
+NUM_ITERATIONS = 5
+NUM_ENV_RUNNERS = int(os.environ.get("NUM_ENV_RUNNERS", 8))
+NUM_ENVS_PER_ENV_RUNNER = 1
 
 # ==============================
 # Helper to sanitize metrics
@@ -22,6 +22,7 @@ def sanitize(value):
     elif isinstance(value, (np.integer, np.int32, np.int64)):
         return int(value)
     return value
+
 
 # ==============================
 #  Atari → Float32 Wrapper
@@ -46,13 +47,17 @@ class FloatObsEnv(gym.Env):
         obs, reward, terminated, truncated, info = self.env.step(action)
         return obs.astype(np.float32) / 255.0, reward, terminated, truncated, info
 
+
 # ==============================
 #  Register environment
 # ==============================
 from ray.tune.registry import register_env
+
 def env_creator(config):
     return FloatObsEnv(config)
+
 register_env("PacmanFloat", env_creator)
+
 
 # ==============================
 #  RLlib PPO Config
@@ -65,7 +70,9 @@ config = (
     .environment("PacmanFloat")
     .env_runners(
         num_env_runners=NUM_ENV_RUNNERS,
-        num_envs_per_env_runner=NUM_ENVS_PER_ENV_RUNNER
+        num_envs_per_env_runner=NUM_ENVS_PER_ENV_RUNNER,
+        rollout_fragment_length=100,
+        sample_timeout_s=120,
     )
     .rl_module(
         model_config=DefaultModelConfig(
@@ -76,28 +83,24 @@ config = (
                 [64, [4, 4], 2],
                 [64, [3, 3], 1],
             ],
-
-            # Classic single FC layer
             head_fcnet_hiddens=[512],
-
-            # Share CNN + FC between policy and value
-            vf_share_layers=True
+            vf_share_layers=True,
         )
     )
     .training(
         lr=0.0002,
-        train_batch_size=8000,
-        num_epochs=10,
+        train_batch_size=2000,
+        num_epochs=5,
     )
     .evaluation(
         evaluation_interval=5,
-        evaluation_num_env_runners=4
+        evaluation_num_env_runners=4,
     )
 )
 
-
 # Build the algorithm
 algo = config.build_algo()
+
 
 # ==============================
 # Output directory and logging
@@ -106,38 +109,40 @@ project_dir = os.path.dirname(os.path.abspath(__file__))
 default_out = os.path.join(project_dir, "out")
 save_dir = os.environ.get("SAVE_DIR", default_out)
 
-# Ensure save_dir is inside the project folder
+# Ensure save_dir is inside project folder
 try:
     common = os.path.commonpath([project_dir, os.path.abspath(save_dir)])
 except Exception:
     common = None
+
 if common != project_dir:
     save_dir = default_out
-    print(f"WARNING: SAVE_DIR was outside project tree. Forcing save_dir to {save_dir}")
+    print(f"WARNING: SAVE_DIR outside project tree. Using {save_dir}")
 
 os.makedirs(save_dir, exist_ok=True)
 
-# Configure logger
 logger = logging.getLogger("training")
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
+
 fh = logging.FileHandler(os.path.join(save_dir, "train.log"))
-fh.setLevel(logging.INFO)
 fh.setFormatter(formatter)
 sh = logging.StreamHandler()
-sh.setLevel(logging.INFO)
 sh.setFormatter(formatter)
+
 if not logger.handlers:
     logger.addHandler(fh)
     logger.addHandler(sh)
 
-# Metrics file
 metrics_jsonl_path = os.path.join(save_dir, "metrics.jsonl")
+
 
 # ==============================
 # Training Loop
 # ==============================
 training_start = time.perf_counter()
+prev_env_steps = 0
+
 for i in range(NUM_ITERATIONS):
     result = algo.train()
     logger.info("=== Training iteration %d ===", i)
@@ -145,14 +150,35 @@ for i in range(NUM_ITERATIONS):
     env_stats = result.get("env_runners", {})
     learner_stats = result.get("learners", {}).get("default_policy", {})
 
+    total_steps = env_stats.get("num_env_steps_sampled_lifetime", 0)
+    steps_this_iter = total_steps - prev_env_steps
+    prev_env_steps = total_steps
+
+    time_iter = result.get("time_this_iter_s", 0.0)
+    steps_per_sec = (
+        steps_this_iter / time_iter if time_iter > 0 and steps_this_iter > 0 else None
+    )
+
     raw_metrics = {
         "timestamp": datetime.utcnow().isoformat(),
         "iteration": i,
+
+        # parallelism config
+        "num_env_runners": NUM_ENV_RUNNERS,
+        "num_envs_per_env_runner": NUM_ENVS_PER_ENV_RUNNER,
+
+        # sampling / throughput
+        "env_steps_lifetime": total_steps,
+        "env_steps_this_iter": steps_this_iter,
+        "time_this_iter_s": time_iter,
+        "env_steps_per_second": steps_per_sec,
+
+        # env stats
         "episode_return_mean": env_stats.get("episode_return_mean"),
         "episode_len_mean": env_stats.get("episode_len_mean"),
         "num_episodes": env_stats.get("num_episodes"),
-        "num_env_steps_sampled_lifetime": env_stats.get("num_env_steps_sampled_lifetime"),
-        "time_this_iter_s": result.get("time_this_iter_s"),
+
+        # learner stats
         "total_loss": learner_stats.get("total_loss"),
         "policy_loss": learner_stats.get("policy_loss"),
         "vf_loss": learner_stats.get("vf_loss"),
@@ -161,64 +187,46 @@ for i in range(NUM_ITERATIONS):
 
     metrics = {k: sanitize(v) for k, v in raw_metrics.items()}
 
-    if metrics["episode_return_mean"] is None:
-        logger.warning(
-            "Iteration %d: no completed episodes yet, skipping metrics write", i
-        )
-        continue
-
-    # Logging summary
-    logger.info(
-        "Summary - Episode Return Mean: %s, Episode Len Mean: %s, "
-        "Num Episodes: %s, Total Steps: %s, Time: %s s",
-        metrics["episode_return_mean"],
-        metrics["episode_len_mean"],
-        metrics["num_episodes"],
-        metrics["num_env_steps_sampled_lifetime"],
-        metrics["time_this_iter_s"]
-    )
-
-    logger.info(
-        "Losses - Total: %s, VF: %s, Policy: %s, Entropy: %s",
-        metrics["total_loss"],
-        metrics["vf_loss"],
-        metrics["policy_loss"],
-        metrics["entropy"]
-    )
-
-    # Write JSONL
     with open(metrics_jsonl_path, "a") as f:
         f.write(json.dumps(metrics) + "\n")
 
-    # Uncomment the line below to log the full result dict if needed
-    # logger.info(result)
+    logger.info(
+        "Steps: %s | Time: %.2f s | Throughput: %s steps/s | Return: %s",
+        metrics["env_steps_this_iter"],
+        metrics["time_this_iter_s"],
+        metrics["env_steps_per_second"],
+        metrics["episode_return_mean"],
+    )
 
-# Compute total training time and save information
+
+# ==============================
+# Save global information
+# ==============================
 total_time_s = time.perf_counter() - training_start
-totals = {
+
+info = {
     "timestamp": datetime.utcnow().isoformat(),
-    "total_training_time_s": float(total_time_s),
-    "total_training_time_min": float(total_time_s / 60),
     "num_env_runners": NUM_ENV_RUNNERS,
     "num_envs_per_env_runner": NUM_ENVS_PER_ENV_RUNNER,
-    "total_env_steps_sampled_lifetime": metrics.get("num_env_steps_sampled_lifetime") if 'metrics' in locals() else None
+    "num_iterations": NUM_ITERATIONS,
+    "train_batch_size": 2000,
+    "total_training_time_s": total_time_s,
+    "total_training_time_min": total_time_s / 60,
+    "total_env_steps": prev_env_steps,
 }
-totals_path = os.path.join(save_dir, "information.json")
-with open(totals_path, "w") as f:
-    json.dump({k: sanitize(v) for k, v in totals.items()}, f, indent=2)
-logger.info("Information saved to %s", totals_path)
+
+with open(os.path.join(save_dir, "information.json"), "w") as f:
+    json.dump({k: sanitize(v) for k, v in info.items()}, f, indent=2)
+
+logger.info("Information saved")
+
 
 # ==============================
-#  Evaluation
+# Evaluation + checkpoint
 # ==============================
-eval_result = algo.evaluate()
-
-# Save checkpoint
-checkpoint_path = algo.save(save_dir)
+algo.evaluate()
+checkpoint_path = algo.save(os.path.abspath(save_dir))
 logger.info("Checkpoint saved at: %s", checkpoint_path)
 
-# ==============================
-#  Cleanup
-# ==============================
 algo.stop()
 logger.info("Training completed.")
