@@ -189,6 +189,7 @@ total_time_s = time.perf_counter() - training_start
 totals = {
     "timestamp": datetime.utcnow().isoformat(),
     "total_training_time_s": float(total_time_s),
+    "total_training_time_min": float(total_time_s / 60),
     "num_env_runners": NUM_ENV_RUNNERS,
     "num_envs_per_env_runner": NUM_ENVS_PER_ENV_RUNNER,
     "total_env_steps_sampled_lifetime": metrics.get("num_env_steps_sampled_lifetime") if 'metrics' in locals() else None

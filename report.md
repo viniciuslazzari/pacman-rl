@@ -2,16 +2,22 @@
 
 We have tested different setups, changing the number of hosts (nodes) and the number of environment runners.
 
-## Experiment 1: 1 host, 1 core, 1 environment runner
+## Experiment 0: 1 host, 1 core, 1 environment runner
 
 
 Baseline: single CPU, single worker, single env. 
 
-## Experiment 2: 2 hosts, 8 env runners, 1 env per runner
+## Experiment 1: 2 hosts, 8 env runners, 1 env per runner
 
 - Total time: 2 hours 48 minutes (10077.2967520411 seconds)
 - The agent’s rewards steadily increase over training, rising from ~16 to ~60–70 and fluctuating around 60.
 ![Training dashboard](dashboards/host2_envrunners8_envperrunner1.png)
+
+## Experiment 2: 2 host, 16 env runners, 1 env per runner
+- Total time: 2 hours 42 min (9763.128816839 seconds)
+- Rewards around 50
+![Training dashboard](dashboards/host2_envrunners16_envperrunner1.png)
+
 
 
 ## Experiment 2: 1 host, 2 cores, 2 env runners, 1 env per worker
