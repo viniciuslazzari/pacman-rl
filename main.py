@@ -12,7 +12,7 @@ NUM_ITERATIONS = 60
 NUM_ENV_RUNNERS = int(os.environ.get("NUM_ENV_RUNNERS", 8))
 NUM_ENVS_PER_ENV_RUNNER = 1
 TRAIN_BATCH_SIZE = 8000
-EPOCHS = 10
+NUM_EPOCHS = 10
 
 # ==============================
 # Helper to sanitize metrics
