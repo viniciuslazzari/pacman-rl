@@ -1,12 +1,27 @@
+"""Plot training metrics and save a training dashboard image.
+
+Usage:
+    python3 plot_results.py [RUNNERS]
+
+Example:
+    python3 plot_results.py 96
+"""
+
 import json
 import matplotlib.pyplot as plt
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description="Plot training results for given number of env runners")
+parser.add_argument("runners", nargs="?", type=int, default=1, help="Number of env runners (default: 1)")
+args = parser.parse_args()
+runners = args.runners
 
 # Load metrics
-metrics_file = "out/metrics.jsonl"
+metrics_file = f"out/metrics_{runners}envrunners.jsonl"
 
 if not os.path.exists(metrics_file):
-    raise FileNotFoundError(f"{metrics_file} does not exist. Make sure training completed successfully.")
+    raise FileNotFoundError(f"{metrics_file} does not exist. Make sure training for {runners} env runners completed successfully.")
 
 metrics = []
 with open(metrics_file) as f:
@@ -21,12 +36,13 @@ steps = [m["env_steps_lifetime"] for m in metrics]
 policy_loss = [m["policy_loss"] for m in metrics]
 vf_loss = [m["vf_loss"] for m in metrics]
 entropy = [m["entropy"] for m in metrics]
+env_steps_per_sec = [m["env_steps_per_second"] for m in metrics]    
 
 # Plot Dashboard
-plt.figure(figsize=(15, 12))
+plt.figure(figsize=(16, 14))
 
 # 1. Reward curve
-plt.subplot(2, 2, 1)
+plt.subplot(3, 2, 1)
 plt.plot(iterations, returns, marker='o', color='tab:blue')
 plt.xlabel("Training Iteration")
 plt.ylabel("Mean Episode Return")
@@ -34,7 +50,7 @@ plt.title("Learning Curve (Reward)")
 plt.grid(True)
 
 # 2. Episode length
-plt.subplot(2, 2, 2)
+plt.subplot(3, 2, 2)
 plt.plot(iterations, lengths, marker='o', color='tab:orange')
 plt.xlabel("Training Iteration")
 plt.ylabel("Mean Episode Length")
@@ -42,7 +58,7 @@ plt.title("Episode Length Over Time")
 plt.grid(True)
 
 # 3. Sample efficiency (reward vs env steps)
-plt.subplot(2, 2, 3)
+plt.subplot(3, 2, 3)
 plt.plot(steps, returns, marker='o', color='tab:green')
 plt.xlabel("Total Environment Steps")
 plt.ylabel("Mean Episode Return")
@@ -50,7 +66,7 @@ plt.title("Sample Efficiency")
 plt.grid(True)
 
 # 4. Losses and entropy
-plt.subplot(2, 2, 4)
+plt.subplot(3, 2, 4)
 plt.plot(iterations, policy_loss, label="Policy Loss", color='tab:red')
 plt.plot(iterations, vf_loss, label="Value Loss", color='tab:purple')
 plt.plot(iterations, entropy, label="Entropy", color='tab:brown')
@@ -60,9 +76,18 @@ plt.title("Losses & Policy Entropy")
 plt.legend()
 plt.grid(True)
 
-plt.tight_layout(rect=[0, 0, 0.72, 1])
+# 5. Environment steps per second
+plt.subplot(3, 2, 5)
+plt.plot(iterations, env_steps_per_sec, marker='o')
+plt.xlabel("Training Iteration")
+plt.ylabel("Env Steps / Second")
+plt.title("Sampling Throughput")
+plt.grid(True)
 
-plt.savefig("out/training_dashboard.png", dpi=300)
+plt.tight_layout()
+
+out_file = f"out/training_dashboard_{runners}envrunners.png"
+plt.savefig(out_file, dpi=300)
 plt.show()
 
-print("Dashboard saved to out/training_dashboard.png")
+print(f"Dashboard saved to {out_file}")
