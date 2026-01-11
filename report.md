@@ -235,7 +235,7 @@ Batch size: 16k
 
 We were unable to finish this experiment as it took longer than 3 hours, which was the time limit we stipulated. At the end of three hours, it had reached iteration 51 and achieved increasing returns, reaching 90 in the last iteration, which is lower than what had been achieved in 1-node configurations. The throughput was similar to the other experiments, varying around 75 and 80 steps/s. 
 
-#### Experiment 16: 2 hosts, 200 environment runners
+#### Experiment 16: 2 hosts, 200 environment runners
 
 Master Node: paradoxe-38.rennes.grid5000.fr
 
