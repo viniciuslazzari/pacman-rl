@@ -39,34 +39,26 @@ entropy = [m["entropy"] for m in metrics]
 env_steps_per_sec = [m["env_steps_per_second"] for m in metrics]    
 
 # Plot Dashboard
-plt.figure(figsize=(16, 14))
+plt.figure(figsize=(12, 10))
 
-# 1. Reward curve
-plt.subplot(3, 2, 1)
-plt.plot(iterations, returns, marker='o', color='tab:blue')
-plt.xlabel("Training Iteration")
+# 1. Sample efficiency (reward vs env steps)
+plt.subplot(2, 2, 1)
+plt.plot(steps, returns, marker='o', color='tab:green')
+plt.xlabel("Total Environment Steps")
 plt.ylabel("Mean Episode Return")
-plt.title("Learning Curve (Reward)")
+plt.title("Sample Efficiency (Reward vs Env steps)")
 plt.grid(True)
 
 # 2. Episode length
-plt.subplot(3, 2, 2)
+plt.subplot(2, 2, 2)
 plt.plot(iterations, lengths, marker='o', color='tab:orange')
 plt.xlabel("Training Iteration")
 plt.ylabel("Mean Episode Length")
 plt.title("Episode Length Over Time")
 plt.grid(True)
 
-# 3. Sample efficiency (reward vs env steps)
-plt.subplot(3, 2, 3)
-plt.plot(steps, returns, marker='o', color='tab:green')
-plt.xlabel("Total Environment Steps")
-plt.ylabel("Mean Episode Return")
-plt.title("Sample Efficiency")
-plt.grid(True)
-
-# 4. Losses and entropy
-plt.subplot(3, 2, 4)
+# 3. Losses and entropy
+plt.subplot(2, 2, 3)
 plt.plot(iterations, policy_loss, label="Policy Loss", color='tab:red')
 plt.plot(iterations, vf_loss, label="Value Loss", color='tab:purple')
 plt.plot(iterations, entropy, label="Entropy", color='tab:brown')
@@ -76,9 +68,9 @@ plt.title("Losses & Policy Entropy")
 plt.legend()
 plt.grid(True)
 
-# 5. Environment steps per second
-plt.subplot(3, 2, 5)
-plt.plot(iterations, env_steps_per_sec, marker='o')
+# 4. Environment steps per second
+plt.subplot(2, 2, 4)
+plt.plot(iterations[1:], env_steps_per_sec[1:], marker='o', color='tab:blue')
 plt.xlabel("Training Iteration")
 plt.ylabel("Env Steps / Second")
 plt.title("Sampling Throughput")
