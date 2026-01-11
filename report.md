@@ -1,4 +1,4 @@
-# Report
+# Parallel Reinforcement Learning Report
 
 ## Pacman 
 
@@ -88,8 +88,9 @@ The transition to a 2-host configuration with 104 environment runners yielded ou
 
 Below can be found a detailed presentation of each experiment. 
 
+### Single host, many environment runners
 
-### Experiment 1: 1 host, 1 environment runner
+#### Experiment 1: 1 host, 1 environment runner
 Master Node: paradoxe-31.rennes.grid5000.fr
 
 "total_training_time_min": 178.6369121719
@@ -102,7 +103,7 @@ The agent shows slow but steady learning. Initial random performance improves ov
 - Episode lengths increase over time, from around 420 steps initially to 800+ steps in later iterations.
 - Entropy steadily decreases from ~1.6 initially to ~0.7–1.0 later, meaning the agent is gradually reducing exploration as it becomes more confident in its learned policy.
 
-### Experiment 2: 1 host, 2 environment runners
+#### Experiment 2: 1 host, 2 environment runners
 Master Node: paradoxe-37.rennes.grid5000.fr
 
 "total_training_time_min": 140.23255457173335
@@ -111,63 +112,63 @@ Master Node: paradoxe-37.rennes.grid5000.fr
 
 The training logs show that the agent initially learns steadily, with average episode rewards rising from around 14 to over 300, indicating effective early learning and exploitation of the environment. Episode lengths also increase, reflecting more complex or sustained behaviors. However, over time the policy entropy drops sharply, especially by the end, signaling that the policy has become almost deterministic. This is accompanied by highly negative policy loss and near-zero value loss, suggesting instability or collapse in training. Overall, while the agent achieves high rewards, the sharp decline in entropy and erratic loss values indicate overfitting and reduced exploration.
 
-### Experiment 3: 1 host, 4 environment runners
+#### Experiment 3: 1 host, 4 environment runners
 Master Node: paradoxe-38.rennes.grid5000.fr
 
 "total_training_time_min": 120.48174038546671
 
 ![Training dashboard](dashboards/training_dashboard_4envrunners.png)
 
-### Experiment 4: 1 host, 8 environment runners
+#### Experiment 4: 1 host, 8 environment runners
 Master Node: paradoxe-38.rennes.grid5000.fr
 
 "total_training_time_min": 113.52636106498333
 
 ![Training dashboard](dashboards/training_dashboard_8envrunners.png)
 
-###  Experiment 5: 1 host, 16 environment runners
+####  Experiment 5: 1 host, 16 environment runners
 Master Node: paradoxe-38.rennes.grid5000.fr
 
 "total_training_time_min": 109.55379682653334
 
 ![Training dashboard](dashboards/training_dashboard_16envrunners.png)
 
-### Experiment 6: 1 host, 24 environment runners
+#### Experiment 6: 1 host, 24 environment runners
 Master Node: paradoxe-34.rennes.grid5000.fr
 
 "total_training_time_min": 111.39740566156664
 
 ![Training dashboard](dashboards/training_dashboard_24envrunners.png)
 
-### Experiment 7: 1 host, 32 environment runners
+#### Experiment 7: 1 host, 32 environment runners
 Master Node: paradoxe-38.rennes.grid5000.fr
 
 "total_training_time_min": 110.43792185884995
 
 ![Training dashboard](dashboards/training_dashboard_32envrunners.png)
 
-### Experiment 8: 1 host, 48 environment runners
+#### Experiment 8: 1 host, 48 environment runners
 Master Node: paradoxe-34.rennes.grid5000.fr
 
 "total_training_time_min": 106.55379682653334
 
 ![Training dashboard](dashboards/training_dashboard_48envrunners.png)
 
-### Experiment 9: 1 host, 64 environment runners
+#### Experiment 9: 1 host, 64 environment runners
 Master Node: paradoxe-34.rennes.grid5000.fr
 
 "total_training_time_min": 107.19128965038335
 
 ![Training dashboard](dashboards/training_dashboard_64envrunners.png)
 
-### Experiment 10: 1 host, 96 environment runners
+#### Experiment 10: 1 host, 96 environment runners
 Master Node: paradoxe-38.rennes.grid5000.fr
 
 "total_training_time_min": 109.33933907701666
 
 ![Training dashboard](dashboards/training_dashboard_96envrunners.png)
 
-### Experiment 11: 1 host, 104 environment runners
+#### Experiment 11: 1 host, 104 environment runners
 Master Node: paradoxe-38.rennes.grid5000.fr
 
 It was not possible to scale up to 104 environment runners with a single host. We got the following error until the job was killed:
@@ -176,34 +177,37 @@ It was not possible to scale up to 104 environment runners with a single host. W
 
 However, we were able to test 104 environment runners with two hosts. Results can be found below. 
 
-### Experiment 12: 2 host, 96 environment runners
+### Many hosts, many environment runners 
+
+#### Experiment 12: 1 host, 100 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
+
+Batch size: 8k
+
+#### Experiment 12: 2 host, 200 environment runners
+
+Master Node: paradoxe-34.rennes.grid5000.fr
+
 Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
+Batch size: 16k
 
+#### Experiment 12: 4 host, 400 environment runners
 
-### Experiment 13: 2 host, 104 environment runners
+Master Node: paradoxe-34.rennes.grid5000.fr
 
+Worker Nodes: paradoxe-38.rennes.grid5000.fr
+
+Batch size: 32k
+
+#### Experiment 12: 8 host, 800 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
-Worker Nodes: paradoxe-38.rennes.grid5000.frt
+Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
-106 min
-
-![Training dashboard](dashboards/training_dashboard_2hosts_104envrunners.png)
-
-### Experiment 14: 3 hosts, 104 environment runners
-
-Master Node: paradoxe-34.rennes.grid5000.fr
-Worker Nodes: paradoxe-38.rennes.grid5000.fr paradoxe-57.rennes.grid5000.fr
-
-103 min
-
-![Training dashboard](dashboards/training_dashboard_3hosts_104envrunners.png)
-
-
+Batch size: 64k
 
 ## Contributions
 
