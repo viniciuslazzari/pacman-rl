@@ -2,6 +2,8 @@
 
 This project implements a reinforcement learning (RL) agent using Ray's PPO algorithm to play Pacman. The training is distributed across a cluster using Ray, allowing scalability to multiple nodes.
 
+The report can be found [here](report.md).
+
 ## Overview
 
 The agent uses a convolutional neural network (CNN) to process Pacman game images and learn to maximize the score through reinforcement learning. Training is executed in parallel using Ray, with support for multiple nodes in an OAR cluster.
