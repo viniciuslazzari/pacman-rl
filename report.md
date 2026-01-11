@@ -4,6 +4,10 @@
 
 We decided to work with the [Pacman environment](https://ale.farama.org/environments/pacman/), which seemed to be an interesting and challenging game.
 
+## The model
+
+The model utilized for these tests is a close approximation of the DeepMind DQN Atari model, used as a reference for many sorts of games in the Atari platform. Observations are normalized to float32 in [0,1] and fed to three convolutional blocks: 16 filters with an 8x8 kernel and stride 4, then 32 filters with a 4x4 kernel and stride 2, and finally 64 filters with a 3x3 kernel and stride 1; all convolution layers use ReLU activations.
+
 ## Experiments
 
 We chose the Rennes site and we ran the tests on the Paradoxe cluster, composed of 64 nodes, 128 cpus, 3328 cores, split into:
