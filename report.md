@@ -57,12 +57,11 @@ Note: The throughput graph excludes the first iteration. The initial measurement
 | metrics_2hosts_104envrunners | 52.634615384615394 | 52.634615384615394 | 25.95306044842719 | 11.022670900842188 | 483.58027691275186 | 78.74916946138404 |
 
 **Total Training Time**
-We expected a signifcant decrease in the time required to collect the 8000 steps.
+We expected a signifcant decrease in the time required to collect the 8000 steps, but the time stabilized between 102-109 minutes. We parallelized the sampling phase (playing the game) by increasing the number of runners. However, the learning phase (calculating gradients and updating the network weights) remained a sequential bottleneck.
 
 
 **Sample Efficiency**
-We expected the rewards to increase.
-
+We expected the rewards to increase, but single-node setups with 1–2 envs had the highest performance. Very high parallelism or multi-node setups might have reduced reward due to unstable learning and synchronization overhead. While 1–2 runners allowed the agent to achieve high mean returns, the 104-runner distributed setup saw a sharp decline.
 
 **Episode Length**
 We expected an increase in episode length.
@@ -180,42 +179,34 @@ It was not possible to scale up to 104 environment runners with a single host. W
 
 However, we were able to test 104 environment runners with two hosts. Results can be found below. 
 
-### Experiment 12: 2 hosts, 2 environment runners
-
-### Experiment 13: 2 hosts, 4 environment runners
-
-### Experiment 14: 2 hosts, 8 environment runners
-
-
-
-### Experiment 15: 2 host, 16 environment runners
-
-### Experiment 16: 2 host, 24 environment runners
-
-### Experiment 17: 2 host, 32 environment runners
-
-### Experiment 18: 2 host, 48 environment runners
-
-
-### Experiment 19: 2 host, 64 environment runners
-
-
-
-### Experiment 20: 2 host, 96 environment runners
+### Experiment 12: 2 host, 96 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
 
 
-### Experiment 21: 2 host, 104 environment runners
+### Experiment 13: 2 host, 104 environment runners
 
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
-Worker Nodes: paradoxe-38.rennes.grid5000.fr
+Worker Nodes: paradoxe-38.rennes.grid5000.frt
+
+106 min
 
 ![Training dashboard](dashboards/training_dashboard_2hosts_104envrunners.png)
+
+### Experiment 14: 3 hosts, 104 environment runners
+
+Master Node: paradoxe-34.rennes.grid5000.fr
+Worker Nodes: paradoxe-38.rennes.grid5000.fr paradoxe-57.rennes.grid5000.fr
+
+103 min
+
+![Training dashboard](dashboards/training_dashboard_3hosts_104envrunners.png)
+
+
 
 ## Contributions
 
