@@ -175,9 +175,7 @@ It was not possible to scale up to 104 environment runners with a single host. W
 
 - The following resource request cannot be scheduled right now: {'CPU': 1.0}. 
 
-However, we were able to test 104 environment runners with two hosts. Results can be found below. 
-
-### Many hosts, many environment runners 
+After that, we tried to test 104 environment runners with 2 hosts. Results can be found below.
 
 #### Experiment 12: 1 host, 100 environment runners
 
@@ -185,7 +183,27 @@ Master Node: paradoxe-34.rennes.grid5000.fr
 
 Batch size: 8k
 
-#### Experiment 13: 2 host, 200 environment runners
+### Many hosts, many environment runners 
+
+#### Experiment 13: 2 hosts, 104 environment runners
+
+Master Node: paradoxe-34.rennes.grid5000.fr
+Worker Nodes: paradoxe-38.rennes.grid5000.fr
+
+Hoping to benefit from horizontal scaling, we tested a configuration with 2 hosts and 104 environment runners, but the results did not show an improvement as we had expected. The Mean Episode Return was lower than all the previous tests with 1 host, and the throughput was around 80 steps/s. After some research, we understood that the 104 environment runners were divided into the 2 hosts, so we would not be able to a "better" training. The same holds for the following experiment we did, with 96 runners.
+
+![Training dashboard](dashboards/training_dashboard_2hosts_104envrunners.png)
+
+#### Experiment 14: 2 host, 96 environment runners
+
+Master Node: paradoxe-34.rennes.grid5000.fr
+Worker Nodes: paradoxe-38.rennes.grid5000.fr
+
+We understood that the fact that the training with 96 environment runners and 2 hosts led to worse results than the training with 1 host and the same number of runners could have been expected, since we divide the runners, but we do not profit from the added resources, since we did not change anything else in the configuration. 
+
+![Training dashboard](dashboards/training_dashboard_2hosts_96envrunners.png)
+
+#### Experiment 15: 2 host, 200 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
@@ -195,7 +213,7 @@ Batch size: 16k
 
 We were unable to finish this experiment as it took longer than 3 hours, which was the time limit we stipulated. At the end of three hours, it had reached iteration 51 and achieved increasing returns, reaching 90 in the last iteration, which is lower than what had been achieved in 1-node configurations. The throughput was similar to the other experiments, varying around 75 and 80 steps/s. 
 
-#### Experiment 14: 4 host, 400 environment runners
+#### Experiment 16: 4 host, 400 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
@@ -203,7 +221,7 @@ Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
 Batch size: 32k
 
-#### Experiment 15: 8 host, 800 environment runners
+#### Experiment 17: 8 host, 800 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
