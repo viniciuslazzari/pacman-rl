@@ -185,7 +185,7 @@ Master Node: paradoxe-34.rennes.grid5000.fr
 
 Batch size: 8k
 
-#### Experiment 12: 2 host, 200 environment runners
+#### Experiment 13: 2 host, 200 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
@@ -193,7 +193,9 @@ Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
 Batch size: 16k
 
-#### Experiment 12: 4 host, 400 environment runners
+We were unable to finish this experiment as it took longer than 3 hours, which was the time limit we stipulated. At the end of three hours, it had reached iteration 51 and achieved increasing returns, reaching 90 in the last iteration, which is lower than what had been achieved in 1-node configurations. The throughput was similar to the other experiments, varying around 75 and 80 steps/s. 
+
+#### Experiment 14: 4 host, 400 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
@@ -201,7 +203,7 @@ Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
 Batch size: 32k
 
-#### Experiment 12: 8 host, 800 environment runners
+#### Experiment 15: 8 host, 800 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
@@ -211,7 +213,7 @@ Batch size: 64k
 
 ## Contributions
 
-- Vinicius Lazzari developed the core training pipeline, which includes a custom Gymnasium wrapper for Atari Pacman, the distributed PPO configuration with a  CNN architecture and a logging system.
-- Laura Keidann implemented the data export system with the relevant metrics and developed the plot_results.py script to automatically generate the performance dashboards and training charts.
+- Vinicius Lazzari developed the core training pipeline, which includes a custom Gymnasium wrapper for Atari Pacman, the distributed PPO configuration with a  CNN architecture, and a logging system.
+- Laura Keidann implemented the data export system with the relevant metrics and developed the plot_results.py script to generate the performance dashboards and training charts automatically.
 
 Initially, both students conducted preliminary tests to explore the information that could be gathered from the metrics. Then, a final testing plan was developed. The experiments were divided between the two students, who then analyzed together the final results and collaborated on the report.
