@@ -3,14 +3,20 @@ import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import re
 
-jsonl_folder = "experiments" 
-output_folder = "comparison_results"
+jsonl_folder = "experiments/1host" 
+output_folder = "comparison_results/1host"
 os.makedirs(output_folder, exist_ok=True)
 
-# Load data from all experiments
+# Load data from all experiments (sorted numerically by embedded number, e.g., env runners)
 experiments = {}
-for file in glob.glob(os.path.join(jsonl_folder, "*.jsonl")):
+
+def _numeric_key(path):
+    m = re.search(r"(\d+)", os.path.basename(path))
+    return int(m.group(1)) if m else float('inf')
+
+for file in sorted(glob.glob(os.path.join(jsonl_folder, "*.jsonl")), key=_numeric_key):
     exp_name = os.path.splitext(os.path.basename(file))[0]
     metrics = []
     with open(file, "r") as f:

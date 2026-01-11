@@ -90,6 +90,30 @@ Below can be found a detailed presentation of each experiment.
 
 ### Single host, many environment runners
 
+| Experiment | Final Reward | Max Reward | Mean Reward | Reward Std | Mean Episode Length | Mean Steps/sec |
+| --- | --- | --- | --- | --- | --- | --- |
+| metrics_001_envrunner | 127.79000000000008 | 151.39 | 82.10043055555555 | 35.05970465709116 | 703.3360138888887 | 44.933081579343 |
+| metrics_002_envrunners | 128.28750000000002 | 257.5375 | 86.55265410958904 | 60.64286957591198 | 730.6539697488585 | 57.32669390951912 |
+| metrics_004_envrunners | 102.1875 | 102.1875 | 60.906576492537326 | 22.80347487439459 | 938.502139303483 | 66.16930259080075 |
+| metrics_008_envrunners | 120.32500000000002 | 151.4375 | 85.81225340136055 | 37.92548127820646 | 794.9601573129253 | 71.02742005495423 |
+| metrics_016_envrunners | 107.8375 | 111.75 | 68.85440883190883 | 26.60861981958292 | 695.885892094017 | 73.48247530354112 |
+| metrics_048_envrunners | 71.33333333333333 | 90.33333333333331 | 60.075464083938655 | 24.010422146349164 | 611.3496771589993 | 75.6646421836694 |
+| metrics_064_envrunners | 150.109375 | 152.0 | 79.24534581386074 | 47.78348748577528 | 610.1362361905492 | 77.32921319605522 |
+| metrics_096_envrunners | 104.08333333333331 | 104.08333333333331 | 52.108100221309996 | 25.830408052200628 | 585.9487801162471 | 73.7251977142047 |
+| metrics_100_envrunners | 92.18 | 92.18 | 53.774347328847334 | 24.900682245920592 | 584.5207488039565 | 73.0805720558696 |
+
+
+By changing the number of environment runners, we expected to see improvements in performance, but we discovered that the results were not so easy to predict.
+
+We were able to detect that the throughtput increased, with more environment steps happening per second for each iteration as we increased the number of runners, which confirmed our expectation. However, at some point (from 8 runners onwards) no more gains could be obtained.
+
+![Env steps per second vs iteration](comparison_results/1host/env_steps_per_second_vs_iteration.png)
+
+However, the analysis of the rewards shows that the highest rewards were achieved with 2 environment runners, followed by experiments with 64, 8, and 1.
+
+![Reward vs iteration](comparison_results/1host/reward_vs_iteration.png)
+
+
 #### Experiment 1: 1 host, 1 environment runner
 Master Node: paradoxe-31.rennes.grid5000.fr
 

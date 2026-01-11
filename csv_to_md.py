@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load CSV
-df = pd.read_csv("comparison_results/experiments_summary.csv")
+df = pd.read_csv("comparison_results/1host/experiments_summary.csv")
 
 # Print as Markdown table
 def df_to_markdown(df):
