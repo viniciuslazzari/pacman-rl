@@ -249,14 +249,6 @@ We then proceeded to test the same configuration but for a training batch size o
 
 We were surprised to find no significant improvements in performance.
 
-#### Experiment 17: 4 host, 400 environment runners
-
-Master Node: paradoxe-34.rennes.grid5000.fr
-
-Worker Nodes: paradoxe-38.rennes.grid5000.fr
-
-Batch size: 8k
-
 
 ## Contributions
 
