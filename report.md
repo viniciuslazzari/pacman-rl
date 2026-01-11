@@ -229,7 +229,7 @@ We understood that the fact that the training with 96 environment runners and 2 
 
 ![Training dashboard](dashboards/training_dashboard_2hosts_96envrunners.png)
 
-#### Experiment 15: 2 host, 200 environment runners
+#### Experiment 15: 2 hosts, 200 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
@@ -239,7 +239,17 @@ Batch size: 16k
 
 We were unable to finish this experiment as it took longer than 3 hours, which was the time limit we stipulated. At the end of three hours, it had reached iteration 51 and achieved increasing returns, reaching 90 in the last iteration, which is lower than what had been achieved in 1-node configurations. The throughput was similar to the other experiments, varying around 75 and 80 steps/s. 
 
-#### Experiment 16: 4 host, 400 environment runners
+#### Experiment 16: 2 hosts, 200 environment runners
+
+Batch size: 8k
+
+We then proceeded to test the same configuration but for a training batch size of 8000. This experiment was able to run until the end.
+
+![Training dashboard](dashboards/training_dashboard_200envrunners.png)
+
+We were surprised to find no significant improvements in performance.
+
+#### Experiment 17: 4 host, 400 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
@@ -247,7 +257,7 @@ Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
 Batch size: 32k
 
-#### Experiment 17: 8 host, 800 environment runners
+#### Experiment 18: 8 host, 800 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
 
