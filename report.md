@@ -61,17 +61,11 @@ Note: The throughput graph excludes the first iteration. The initial measurement
 | metrics_2hosts_104envrunners | 52.634615384615394 | 52.634615384615394 | 25.95306044842719 | 11.022670900842188 | 483.58027691275186 | 78.74916946138404 |
 
 **Total Training Time**
-We expected a signifcant decrease in the time required to collect the 8000 steps, but the time stabilized between 102-109 minutes. We parallelized the sampling phase (playing the game) by increasing the number of runners. However, the learning phase (calculating gradients and updating the network weights) remained a sequential bottleneck.
-
+We expected a signifcant decrease in the time required to collect the 8000 steps, but the time stabilized between 102-109 minutes. One hypothesis to explain this is that we parallelized the sampling phase (playing the game) by increasing the number of runners. However, the learning phase (calculating gradients and updating the network weights) remained a sequential bottleneck.
 
 **Sample Efficiency**
 We expected the rewards to increase, but single-node setups with 1–2 envs had the highest performance. Very high parallelism or multi-node setups might have reduced reward due to unstable learning and synchronization overhead. While 1–2 runners allowed the agent to achieve high mean returns, the 104-runner distributed setup saw a sharp decline.
 
-**Episode Length**
-We expected an increase in episode length.
-
-
-**Losses and Policy Entropy**
 
 **Sample Throughput**
 
@@ -97,6 +91,7 @@ Below can be found a detailed presentation of each experiment.
 | metrics_004_envrunners | 102.1875 | 102.1875 | 60.906576492537326 | 22.80347487439459 | 938.502139303483 | 66.16930259080075 |
 | metrics_008_envrunners | 120.32500000000002 | 151.4375 | 85.81225340136055 | 37.92548127820646 | 794.9601573129253 | 71.02742005495423 |
 | metrics_016_envrunners | 107.8375 | 111.75 | 68.85440883190883 | 26.60861981958292 | 695.885892094017 | 73.48247530354112 |
+| metrics_032_envrunners | 171.8125 | 176.59375 | 106.53732073011734 | 58.949269654604244 | 630.1186033246413 | 72.87489488745433 |
 | metrics_048_envrunners | 71.33333333333333 | 90.33333333333331 | 60.075464083938655 | 24.010422146349164 | 611.3496771589993 | 75.6646421836694 |
 | metrics_064_envrunners | 150.109375 | 152.0 | 79.24534581386074 | 47.78348748577528 | 610.1362361905492 | 77.32921319605522 |
 | metrics_096_envrunners | 104.08333333333331 | 104.08333333333331 | 52.108100221309996 | 25.830408052200628 | 585.9487801162471 | 73.7251977142047 |
@@ -109,7 +104,7 @@ We were able to detect that the throughtput increased, with more environment ste
 
 ![Env steps per second vs iteration](comparison_results/1host/env_steps_per_second_vs_iteration.png)
 
-However, the analysis of the rewards shows that the highest rewards were achieved with 2 environment runners, followed by experiments with 64, 8, and 1.
+However, the analysis of the rewards shows that the highest rewards were achieved with 2 environment runners, followed by experiments with 64, 32, 8, and 1.
 
 ![Reward vs iteration](comparison_results/1host/reward_vs_iteration.png)
 
@@ -220,9 +215,10 @@ Hoping to benefit from horizontal scaling, we tested a configuration with 2 host
 
 ![Training dashboard](dashboards/training_dashboard_2hosts_104envrunners.png)
 
-#### Experiment 14: 2 host, 96 environment runners
+#### Experiment 14: 2 hosts, 96 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
+
 Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
 We understood that the fact that the training with 96 environment runners and 2 hosts led to worse results than the training with 1 host and the same number of runners could have been expected, since we divide the runners, but we do not profit from the added resources, since we did not change anything else in the configuration. 
@@ -241,6 +237,10 @@ We were unable to finish this experiment as it took longer than 3 hours, which w
 
 #### Experiment 16: 2 hosts, 200 environment runners
 
+Master Node: paradoxe-38.rennes.grid5000.fr
+
+Worker Nodes: paradoxe-51.rennes.grid5000.fr
+
 Batch size: 8k
 
 We then proceeded to test the same configuration but for a training batch size of 8000. This experiment was able to run until the end.
@@ -255,15 +255,8 @@ Master Node: paradoxe-34.rennes.grid5000.fr
 
 Worker Nodes: paradoxe-38.rennes.grid5000.fr
 
-Batch size: 32k
+Batch size: 8k
 
-#### Experiment 18: 8 host, 800 environment runners
-
-Master Node: paradoxe-34.rennes.grid5000.fr
-
-Worker Nodes: paradoxe-38.rennes.grid5000.fr
-
-Batch size: 64k
 
 ## Contributions
 
