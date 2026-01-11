@@ -183,6 +183,8 @@ Master Node: paradoxe-34.rennes.grid5000.fr
 
 Batch size: 8k
 
+![Training dashboard](dashboards/training_dashboard_100envrunners.png)
+
 ### Many hosts, many environment runners 
 
 #### Experiment 13: 2 hosts, 104 environment runners
