@@ -42,7 +42,7 @@ We analyzed the perfomance by looking at the following metrics:
 - Entropy: A measure of randomness in the policy’s action selection; higher entropy indicates more exploration.
 - Environment steps per second: The rate at which the agent interacts with the environment, reflecting sampling throughput and computational efficiency.
 
-We generated 4 graphs to better visualize the results: Sample efficiency (reward vs env steps), Episode length, Losses and entropy, and Environment steps per second.
+We generated 4 graphs to better visualize the results: Sample efficiency (reward vs env steps), Episode length, Losses and entropy, and Environment steps per second. Below we analyze the most significant findings.
 
 Note: The throughput graph excludes the first iteration. The initial measurement included Ray worker initialization and environment setup overhead, resulting in an outlier (X steps/sec) that obscured the steady-state performance metrics.
 
@@ -53,7 +53,7 @@ We expected a signifcant decrease in the time required to collect the 8000 steps
 
 **Sample Efficiency**
 
-We expected the rewards to increase, but single-node setups with 1–2 envs had the highest performance. Very high parallelism or multi-node setups might have reduced reward due to unstable learning and synchronization overhead. While 1–2 runners allowed the agent to achieve high mean returns, the 104-runner distributed setup saw a sharp decline.
+We expected the rewards to increase, but single-node setups with 1–2 environment runners had the highest performance in terms of rewards per iteration. Very high parallelism or multi-node setups might have reduced reward due to unstable learning and synchronization overhead. While 1–2 runners allowed the agent to achieve high mean returns, the 104-runner distributed setup saw a sharp decline.
 
 
 **Sample Throughput**

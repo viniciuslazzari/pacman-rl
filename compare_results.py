@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import os
 import re
 
-jsonl_folder = "experiments/1host" 
-output_folder = "comparison_results/1host"
+jsonl_folder = "experiments/1_vs_many_hosts" 
+output_folder = "comparison_results/1_vs_many_hosts"
 os.makedirs(output_folder, exist_ok=True)
 
 # Load data from all experiments (sorted numerically by embedded number, e.g., env runners)
