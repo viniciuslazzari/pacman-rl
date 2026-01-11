@@ -206,6 +206,28 @@ Batch size: 8k
 
 ### Many hosts, many environment runners 
 
+| Experiment | Final Reward | Max Reward | Mean Reward | Reward Std | Mean Episode Length | Mean Steps/sec |
+| --- | --- | --- | --- | --- | --- | --- |
+| metrics_001_envrunner | 127.79000000000008 | 151.39 | 82.10043055555555 | 35.05970465709116 | 703.3360138888887 | 44.933081579343 |
+| metrics_002_envrunners | 128.28750000000002 | 257.5375 | 86.55265410958904 | 60.64286957591198 | 730.6539697488585 | 57.32669390951912 |
+| metrics_008_envrunners | 120.32500000000002 | 151.4375 | 85.81225340136055 | 37.92548127820646 | 794.9601573129253 | 71.02742005495423 |
+| metrics_032_envrunners | 171.8125 | 176.59375 | 106.53732073011734 | 58.949269654604244 | 630.1186033246413 | 72.87489488745433 |
+| metrics_096_envrunners | 104.08333333333331 | 104.08333333333331 | 52.108100221309996 | 25.830408052200628 | 585.9487801162471 | 73.7251977142047 |
+| metrics_104envrunners_2hosts | 52.634615384615394 | 52.634615384615394 | 25.95306044842719 | 11.022670900842188 | 483.58027691275186 | 78.74916946138404 |
+| metrics_200envrunners_2hosts | 83.47 | 83.47 | 53.44504496569904 | 21.77068253857407 | 562.997236114889 | 74.65190210211168 |
+
+The results show that increasing the number of nodes did not directly lead to an increase in performance overall.
+
+![Env steps per second vs iteration](comparison_results/1_vs_many_hosts/env_steps_per_second_vs_iteration.png)
+
+We can see that the number of environment steps per second was in general a little bit higher for the experiments with 2 hosts, but overall it was not far from the best results we achieved we the increase in environment runners. We can see that perhaps our experiments encountered a bottleneck that we could not identify. It could have been the number of learners or some aspects of the model and the training that led to reduced gains. The current state could not benefit from the increase in parallelism that 2 nodes provided.
+
+![Reward vs iteration](comparison_results/1_vs_many_hosts/reward_vs_iteration.png)
+
+
+In terms of rewards, we saw poorer results for the experiments with two hosts, contributing to the hypothesis that other changes were needed for the training to improve. With 104 and 200 runners divided between 2 nodes, maintaining the training batch size of 8000, maybe we experience synchronization and network overhead, or the "stale gradient" problem, with learners sharing stale data. The batch size might have been another limitation. We tried increasing the training batch size of 8000, but the experiments took more than 3 hours and could not be concluded.
+
+
 #### Experiment 13: 2 hosts, 104 environment runners
 
 Master Node: paradoxe-34.rennes.grid5000.fr
@@ -235,7 +257,8 @@ Batch size: 16k
 
 We were unable to finish this experiment as it took longer than 3 hours, which was the time limit we stipulated. At the end of three hours, it had reached iteration 51 and achieved increasing returns, reaching 90 in the last iteration, which is lower than what had been achieved in 1-node configurations. The throughput was similar to the other experiments, varying around 75 and 80 steps/s. 
 
-#### Experiment 16: 2 hosts, 200 environment runners
+#### Experiment 16: 2 hosts, 200 environment runners
+
 
 Master Node: paradoxe-38.rennes.grid5000.fr
 
