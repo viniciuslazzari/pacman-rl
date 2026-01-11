@@ -46,24 +46,13 @@ We generated 4 graphs to better visualize the results: Sample efficiency (reward
 
 Note: The throughput graph excludes the first iteration. The initial measurement included Ray worker initialization and environment setup overhead, resulting in an outlier (X steps/sec) that obscured the steady-state performance metrics.
 
-### Results
-
-| Experiment | Final Reward | Max Reward | Mean Reward | Reward Std | Mean Episode Length | Mean Steps/sec |
-| --- | --- | --- | --- | --- | --- | --- |
-| metrics_1envrunners | 127.79000000000008 | 151.39 | 82.10043055555555 | 35.05970465709116 | 703.3360138888887 | 44.933081579343 |
-| metrics_2envrunners | 128.28750000000002 | 257.5375 | 86.55265410958904 | 60.64286957591198 | 730.6539697488585 | 57.32669390951912 |
-| metrics_4envrunners | 102.1875 | 102.1875 | 60.906576492537326 | 22.80347487439459 | 938.502139303483 | 66.16930259080075 |
-| metrics_8envrunners | 120.32500000000002 | 151.4375 | 85.81225340136055 | 37.92548127820646 | 794.9601573129253 | 71.02742005495423 |
-| metrics_16envrunners | 107.8375 | 111.75 | 68.85440883190883 | 26.60861981958292 | 695.885892094017 | 73.48247530354112 |
-| metrics_48envrunners | 71.33333333333333 | 90.33333333333331 | 60.075464083938655 | 24.010422146349164 | 611.3496771589993 | 75.6646421836694 |
-| metrics_96envrunners | 104.08333333333331 | 104.08333333333331 | 52.108100221309996 | 25.830408052200628 | 585.9487801162471 | 73.7251977142047 |
-| metrics_64envrunners | 18.0 | 24.796875 | 18.28372914446646 | 2.420179817337565 | 465.50341306224936 | 74.94770744811187 |
-| metrics_2hosts_104envrunners | 52.634615384615394 | 52.634615384615394 | 25.95306044842719 | 11.022670900842188 | 483.58027691275186 | 78.74916946138404 |
 
 **Total Training Time**
+
 We expected a signifcant decrease in the time required to collect the 8000 steps, but the time stabilized between 102-109 minutes. One hypothesis to explain this is that we parallelized the sampling phase (playing the game) by increasing the number of runners. However, the learning phase (calculating gradients and updating the network weights) remained a sequential bottleneck.
 
 **Sample Efficiency**
+
 We expected the rewards to increase, but single-node setups with 1–2 envs had the highest performance. Very high parallelism or multi-node setups might have reduced reward due to unstable learning and synchronization overhead. While 1–2 runners allowed the agent to achieve high mean returns, the 104-runner distributed setup saw a sharp decline.
 
 
@@ -74,11 +63,6 @@ With 1 host, we expected to see an increase in throughput as we increased the nu
 With a baseline of 1 environment runner, throughput stabilized between 40–48 steps/s. Increasing to 2 and 4 runners showed a clear upward trajectory, reaching up to 72 steps/s. Beyond 8 runners, the performance gains began to saturate. From 24 to 96 runners, the throughput consistently plateaued between 75 and 80 steps/s, with smaller gains between the configurations. This indicates a system bottleneck.
 
 The transition to a 2-host configuration with 104 environment runners yielded our peak performance. In this distributed setup, throughput consistently revolved around 80 steps/s, frequently peaking above 85 steps/s. While the increase over the 96-runner single-host test was modest, the multi-node setup maintained a higher "floor," with values rarely dipping below 70 steps/s.
-
-![Environment steps per second / Iteration](comparison_results/env_steps_per_second_vs_iteration.png)
-
-
-
 
 Below can be found a detailed presentation of each experiment. 
 
@@ -276,6 +260,6 @@ We were surprised to find no significant improvements in performance.
 ## Contributions
 
 - Vinicius Lazzari developed the core training pipeline, which includes a custom Gymnasium wrapper for Atari Pacman, the distributed PPO configuration with a  CNN architecture, and a logging system.
-- Laura Keidann implemented the data export system with the relevant metrics and developed the plot_results.py script to generate the performance dashboards and training charts automatically.
+- Laura Keidann implemented the data export system with the relevant metrics and developed the plot_results.py script to generate the performance dashboards and training charts automatically, as well as the compare_results.py to generate the comparative graphs and tables for the different experiments.
 
 Initially, both students conducted preliminary tests to explore the information that could be gathered from the metrics. Then, a final testing plan was developed. The experiments were divided between the two students, who then analyzed together the final results and collaborated on the report.
